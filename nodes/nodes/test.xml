@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<date>
+	<nodes>
+		<node>
+			<id>0</id>
+			<coordinate_x>15</coordinate_x>
+			<coordinate_y>40</coordinate_y>
+			<type>var</type>
+		</node>
+		<node>
+			<id>1</id>
+			<coordinate_x>15</coordinate_x>
+			<coordinate_y>40</coordinate_y>
+			<type>output_console</type>
+		</node>
+	</nodes>
+	<lines>
+		<line>
+			<from>0</from>
+			<to>1</to>
+			<portfrom>0</portfrom>
+			<portto>0</portto>
+		</line>
+	</lines>
+</date>

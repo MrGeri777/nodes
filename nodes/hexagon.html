@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>nodes</title>
+</head>
+<body>
+<div id="divID"></div>
+	<script type="text/javascript">
+	var div = document.getElementById('divID');
+	for (var i = 0; i < 100; i++) {
+		 if (i %2 ==1){
+			div.innerHTML += '/&nbsp;&nbsp;&nbsp;&nbsp;\\__/&nbsp;&nbsp;&nbsp;&nbsp;\\__/&nbsp;&nbsp;&nbsp;&nbsp;\\__/<br>';
+		 }
+		 else{
+		 	div.innerHTML += '\\__/&nbsp;&nbsp;&nbsp;&nbsp;\\__/&nbsp;&nbsp;&nbsp;&nbsp;\\__/&nbsp;&nbsp;&nbsp;&nbsp;\\<br>';
+		 	console.log("\\__/  \\__/  \\__/  \\");
+		 }
+	}
+	</script>
+</body>
+</html>

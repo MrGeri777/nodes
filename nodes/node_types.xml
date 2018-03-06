@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<date>
+	<types>
+		<type>
+			<name>output_console</name>
+			<inputs>
+				<text>
+					<name>input_text</name>
+					<text>var</text>
+				</text>
+			</inputs>
+			<output>
+			</output>
+			<function>
+				console.log(input_text);
+			</function>
+			<height>30</height>
+			<widht>60</widht>
+		</type>
+		<type>
+			<name>var</name>
+			<inputs>
+			</inputs>
+			<output>
+				<text>
+					<name>input_text</name>
+					<text>var</text>
+				</text>
+			</output>
+			<function>
+				var $ = input text;
+			</function>
+			<height>30</height>
+			<widht>60</widht>
+		</type>		
+	</types>
+</text>

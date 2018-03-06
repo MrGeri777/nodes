@@ -1,0 +1,185 @@
+<html>
+<head>
+	<title>visual</title>
+	<script src="/js/audio.min.js"></script>
+	<script>
+	  audiojs.events.ready(function() {
+	    var as = audiojs.createAll();
+	  });
+	</script>
+	<script>
+	window.onload = function () {
+    "use strict";
+    var paths = document.getElementsByTagName('path');
+    var visualizer = document.getElementById('visualizer');
+    var mask = visualizer.getElementById('mask');
+    var h = document.getElementsByTagName('h1')[0];
+    var path;
+    var report = 2;
+    var soundAllowed = function (stream) {
+        //Audio stops listening in FF without // window.persistAudioStream = stream;
+        //https://bugzilla.mozilla.org/show_bug.cgi?id=965483
+        //https://support.mozilla.org/en-US/questions/984179
+        window.persistAudioStream = stream;
+        h.innerHTML = "Thanks";
+        h.setAttribute('style', 'opacity: 0;');
+        var audioContent = new AudioContext();
+        var audioStream = audioContent.createMediaStreamSource( stream );
+        var analyser = audioContent.createAnalyser();
+        audioStream.connect(analyser);
+        analyser.fftSize = 128*32;
+
+        var frequencyArray = new Uint8Array(analyser.frequencyBinCount);
+        visualizer.setAttribute('viewBox', '0 0 32 255');
+      
+				//Through the frequencyArray has a length longer than 255, there seems to be no
+        //significant data after this point. Not worth visualizing.
+        for (var i = 0 ; i < 64; i++) {
+            path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('stroke-dasharray', '1,1');
+            mask.appendChild(path);
+        }
+        var doDraw = function () {
+				var mar = Math.floor((Math.random()*400)+1);
+				if(mar == 50){
+					document.body.style.backgroundColor = "#20aa20";
+					document.getElementById("mask1").style.opacity = "1";
+				}
+				else if(mar == 51){
+					document.getElementById("mask1").style.opacity = "0";
+					document.getElementById("visual").style.opacity = "0";
+					document.getElementById("mask2").style.opacity = "1";
+				}
+				else if(mar == 52){
+					document.getElementById("mask1").style.opacity = "0";
+					document.getElementById("visual").style.opacity = "0";
+					document.getElementById("mask3").style.opacity = "1";
+				}
+				else if(mar == 53){
+					document.getElementById("mask1").style.opacity = "0";
+					document.getElementById("visual").style.opacity = "0";
+					document.getElementById("mask4").style.opacity = "1";				
+				}
+				else{
+					document.getElementById("mask1").style.opacity = "1";
+					document.getElementById("visual").style.opacity = "1";
+					document.getElementById("mask2").style.opacity = "0";
+					document.getElementById("mask3").style.opacity = "0";
+					document.getElementById("mask4").style.opacity = "0";
+					document.body.style.backgroundColor = "20ee20";
+				}
+            requestAnimationFrame(doDraw);
+            analyser.getByteFrequencyData(frequencyArray);
+          	var adjustedLength;
+            for (var i = 0 ; i < 64; i++) {
+              	adjustedLength = Math.floor(frequencyArray[i]) - (Math.floor(frequencyArray[i]) % 5);
+                paths[i].setAttribute('d', 'M'+ (i) +',255 l 0,-' + adjustedLength/1);
+            }
+
+        }
+        doDraw();
+    }
+
+    var soundNotAllowed = function (error) {
+        h.innerHTML = "You must allow your microphone.";
+        console.log(error);
+    }
+
+    /*window.navigator = window.navigator || {};
+    /*navigator.getUserMedia =  navigator.getUserMedia       ||
+                              navigator.webkitGetUserMedia ||
+                              navigator.mozGetUserMedia    ||
+                              null;*/
+    navigator.getUserMedia({audio:true}, soundAllowed, soundNotAllowed);
+
+};
+	</script>
+	<style>
+		html, body{
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		margin: 0;
+		font-size: 0;
+		background-color:black;
+
+		}
+
+		svg{
+		display: block;
+		width: 39%;
+		height: 60%;
+		left:40%;
+		bottom:23.3%;
+		padding: 0;
+		margin: 0;
+		position:absolute;
+
+		}
+
+		h1{
+		width: 100%;
+		font-family: sans-serif;
+		position:absolute;
+		text-align:center;
+		color:white;
+		font-size: 18px;
+		top: 40%;
+		opacity: 1;
+		transition: opacity 0.0s ease-in-out;
+		-moz-transition: opacity 0.0s ease-in-out;
+		-webkit-transition: opacity 0.0s ease-in-out;
+		}
+
+		h1 a{
+		  color: #47b1f4;
+		  text-decoration:none;
+		}
+
+		path{
+		stroke-linecap: square;
+		stroke: white;
+		stroke-width: 0.7px;
+		}
+		.test{
+			position:absolute;
+			right:0;
+			top:0;
+			height:100%;
+			width:100%;
+		}
+		.bg{
+			height:100%; 
+			padding:0;	
+			width:100%; 
+			position:fixed;
+		}
+	</style>
+</head>
+<body>
+<audio src="/music/test.mp3" preload="auto" />
+	<div id="mask1" class="bg" style="background:url(images/mask.png); background-size:cover;"></div>
+	<div id="mask2" class="bg" style="background:url(images/mask2.png); background-size:cover;"></div>
+	<div id="mask3" class="bg" style="background:url(images/mask3.png); background-size:cover;"></div>
+	<div id="mask4" class="bg" style="background:url(images/mask4.png); background-size:cover;"></div>
+	<div class="visual" id="visual">
+        <svg preserveAspectRatio="none" id="visualizer" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <defs>
+
+                <mask id="mask">
+                    <g id="maskGroup">
+                  </g>
+                </mask>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#206020;stop-opacity:1" />
+                    <stop offset="20%" style="stop-color:#60aa60;stop-opacity:1" />
+                    <stop offset="90%" style="stop-color:#206020;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#60aa60;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#gradient)" mask="url(#mask)"></rect>
+        </svg>
+	</div>
+<h1>hi</h1>
+</body>
+</html>

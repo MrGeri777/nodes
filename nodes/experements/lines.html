@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+	<script type="text/javascript" src="axe.js"></script>
+</head>
+<body>
+<canvas id="main">
+	dosn't work
+</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('main');	// initialize canvas
+		var ctx = canvas.getContext('2d');
+		var points = [];
+		for (var i = 0; i < getRandomInt(20, 60); i++) {
+			points[i] = new point(getRandomInt(0, window.innerWidth), getRandomInt(0, window.innerHeight), getRandomInt(0,360), getRandomInt(50, 50), getRandomInt(-2, 2));
+		}
+		ctx.canvas.width  = window.innerWidth;
+		ctx.canvas.height = window.innerHeight;
+		var ms = new Date(); var lasttime = ms.getTime(); var fps = 0;
+		var timerId = setInterval(function() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		    draw_points();
+		    draw_lines();
+		    ms = new Date();
+		    fps = 1000/(ms.getTime()-lasttime);
+		    lasttime = ms.getTime();
+		    update(fps);
+		}, 100/30);
+		function point(x, y, vr, vp, rp) {
+			this.x = x;
+			this.y = y;
+			this.vr = vr;
+			this.vp = vp;
+			this.rp = rp;
+		}
+		function draw_points(){
+			for (var i = points.length - 1; i >= 0; i--) {
+				ctx.beginPath();
+				ctx.fillStyle="#aaa";
+				ctx.arc(points[i].x, points[i].y,5 ,0 ,2*Math.PI);
+				ctx.fill();
+			}
+		}
+		function update(fps){
+			for (var i = points.length - 1; i >= 0; i--) {
+				if(points[i].x>canvas.width){ points[i].x=0; } 
+				if(points[i].x<0){ points[i].x=canvas.width; }
+				if(points[i].y>canvas.height){ points[i].y=0; } 
+				if(points[i].y<0){ points[i].y=canvas.height; }
+				points[i].x = points[i].x + ((fps*points[i].vp)/300) * Math.cos(Math.radians(points[i].vr));
+		        points[i].y = points[i].y + ((fps*points[i].vp)/300) * Math.sin(Math.radians(points[i].vr));
+		        points[i].vr += points[i].rp/10;
+		        points[i].rp += getRandomInt(-2,2)/10;
+		        if(points[i].rp>2){points[i].rp=2}
+		        if(points[i].rp<-2){points[i].rp=-2}	
+			}
+		}
+		function draw_lines(){
+			var length = 0;
+			ctx.beginPath();
+			for (var i = points.length - 1; i >= 0; i--) {
+				for (var b = i; b < points.length; b++) {
+					length = Math.sqrt(Math.pow(points[i].x - points[b].x, 2) + Math.pow(points[i].y - points[b].y, 2));
+					console.log(length);
+					ctx.lineWidth=2;	
+					if (length<=200) {
+						ctx.moveTo(points[i].x, points[i].y);
+						ctx.lineTo(points[b].x, points[b].y);
+					}
+				}
+			}
+			ctx.stroke();
+		}
+	</script>
+</body>
+</html>

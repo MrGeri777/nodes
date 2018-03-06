@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+			position: fixed;
+			z-index: 0;
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+		input{
+			z-index: 1;
+		}
+
+	</style>
+</head>
+<body>
+<input type="button" onclick="location.href='/index.html';" 		       value="index" style="position: fixed; width: 60px;">
+<input type="button" onclick="location.href='/experements/bezie.html';" value="exp1"  style="position: fixed; width: 60px; left: 70px; ">
+<input type="button" onclick="location.href='/experements/fast.html';" value="exp1"  style="position: fixed; width: 60px; left: 140px; ">
+<canvas id="back">
+	
+</canvas>
+<canvas id="main">
+	
+</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('main');	// initialize canvas
+		var ctx = canvas.getContext('2d');
+		var canvas = document.getElementById('back');	// initialize canvas
+		var back = canvas.getContext('2d');
+		draw_back();
+		var main = new obj(300, 300, 15);
+		var ms = new Date(); var lasttime = ms.getTime(); var fps = 0;
+		var s=0;
+		var timerId = setInterval(function() {
+			ctx.canvas.width  = window.innerWidth;
+		 	ctx.canvas.height = window.innerHeight;
+			s++; if(s>=10) {
+				s=0;
+		    	draw_back();
+			}
+		    draw_obj();
+		     ms = new Date();
+		    fps = ms.getTime()-lasttime;
+		    lasttime = ms.getTime();
+		    update_obj(fps);
+		}, 20);
+		function draw_back() {
+			back.canvas.width  = window.innerWidth;
+		 	back.canvas.height = window.innerHeight;
+			back.beginPath();
+			for (var x = 0.5; x < window.innerWidth; x += 10) {
+				back.moveTo(x, 0);
+				back.lineTo(x, window.innerHeight);
+			}	
+			for (var x = 0.5; x < window.innerHeight; x += 10) {
+				back.moveTo(0, x);
+				back.lineTo(window.innerWidth, x);
+			}
+			back.lineWidth=2;
+			back.strokeStyle = "#eee";
+			back.stroke();	
+		}
+		function acceleration(x){
+			return y;
+		}
+		function obj(x,y,size){
+			this.x = x;
+			this.y = y;
+			this.size = size;
+			this.vector_power = 30;
+			this.vector_route = 0;
+			this.acceleration = 0;
+		}
+		function update_obj(fps){
+			main.x = main.x + ((main.vector_power)/100) * Math.cos(Math.radians(main.vector_route));
+	        main.y = main.y + ((main.vector_power)/100) * Math.sin(Math.radians(main.vector_route));
+	        if(main.x>window.innerWidth){main.x=0;}if(main.y>window.innerHeight){main.y=0;}
+	        if(0>main.x){main.x=innerWidth;}if(0>main.y){main.y=innerHeight;}
+	        main.vector_route+=1;
+			main.vector_route = main.vector_route%360;
+			var e = window.event;
+			var x1 = 15;
+    		var y1 = 15;
+    		var x2 = main.x+40;
+    		var y2 = main.y;
+    		var l1 = Math.sqrt(Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2));
+    		var l2 = Math.sqrt(Math.pow(main.x-x2, 2)+Math.pow(main.y-y2, 2));
+    		var l3 = Math.sqrt(Math.pow(x1-main.x, 2)+Math.pow(y1-main.y, 2));
+		}
+		function draw_obj(){
+			ctx.beginPath();
+			ctx.arc(main.x, main.y,main.size,0,2*Math.PI);
+			ctx.fill();
+			ctx.beginPath();
+	        var toX = main.x + (60) * Math.cos(Math.radians(main.vector_route));
+	        var toY = main.y + (60) * Math.sin(Math.radians(main.vector_route));
+	        ctx.moveTo(main.x, main.y);
+	        ctx.lineTo(toX, toY);
+	        ctx.strokeStyle = "#000";
+	        ctx.lineWidth = 3;
+	        ctx.stroke();
+	        ctx.fillText("fps: "+(1000/fps).toFixed(0) ,0,window.innerHeight-80);
+	        ctx.fillText(fps,0 ,window.innerHeight-65);
+	        ctx.fillText(main.vector_route.toFixed(1),0,window.innerHeight-50);
+	        ctx.fillText(main.x+":"+main.y,0,window.innerHeight-35);
+		}
+		Math.degrees = function(rad)
+		{
+			return rad*(180/Math.PI);
+		}
+		Math.radians = function(deg)
+		{
+			return deg * (Math.PI/180);
+		}
+
+	</script>
+</body>
+</html>

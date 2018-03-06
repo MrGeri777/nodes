@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+	<script type="text/javascript" src="axe.js"></script>
+</head>
+<body>
+<input type="button" onclick="location.href='/index.html';" 		       value="index" style="position: fixed; width: 60px;">
+<input type="button" onclick="location.href='/experements/bezie.html';" value="exp1"  style="position: fixed; width: 60px; left: 70px; ">
+<input type="button" onclick="location.href='/experements/bezie2.html';" value="exp1"  style="position: fixed; width: 60px; left: 140px; ">
+<input type="button" onclick="location.href='/experements/fast.html';" value="exp1"  style="position: fixed; width: 60px; left: 210px; ">
+<input type="button" onclick="location.href='/experements/funcitons.html';" value="exp1"  style="position: fixed; width: 60px; left: 280px; ">
+<input type="button" onclick="location.href='/experements/point_p.html';" value="exp1"  style="position: fixed; width: 60px; left: 350px; ">
+
+<canvas id="main">
+	
+</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('main');	// initialize canvas
+		var ctx = canvas.getContext('2d');
+		var points = []; var lines = [];
+		for (var i = 0; i <= 10; i++) {
+			points[i] = new point(i,getRandomInt(0, window.innerWidth), getRandomInt(0, window.innerHeight));
+		}
+		for (var i = 0; i <= points.length-1; i++) {
+			while(true){
+				var a = getRandomInt(0, points.length-1); b = getRandomInt(0, points.length-1);
+				lines[i] = new line(i, a, b);
+				if(a!=b) break;
+			}
+		}
+		console.log(lines);
+		draw_back();
+		draw_points();
+		draw_lines();
+		find_p();
+		function draw_back() {
+			ctx.canvas.width  = window.innerWidth;
+		 	ctx.canvas.height = window.innerHeight;
+			ctx.beginPath();
+			for (var x = 0.5; x < window.innerWidth; x += 10) {
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, window.innerHeight);
+			}	
+			for (var x = 0.5; x < window.innerHeight; x += 10) {
+				ctx.moveTo(0, x);
+				ctx.lineTo(window.innerWidth, x);
+			}
+			ctx.lineWidth=2;
+			ctx.strokeStyle = "#eee";
+			ctx.stroke();	
+		}
+		function draw_points(){
+			for (var i = 0; i < points.length; i++) {
+				ctx.fillStyle="#000";
+				ctx.beginPath();
+				ctx.arc(points[i].x, points[i].y,10,0,2*Math.PI);
+				ctx.fill();
+				ctx.stroke();
+			}
+
+		}
+		function draw_lines() {
+			// ctx.strokeStyle = "#000";
+			// ctx.beginPath();
+			// ctx.moveTo(points[0].x, points[0].y);
+   //      	ctx.lineTo(points[1].x, points[1].y);
+   //      	ctx.stroke();
+			// ctx.beginPath();
+			// ctx.moveTo(points[2].x, points[2].y);
+   //      	ctx.lineTo(points[3].x, points[3].y);
+   //      	ctx.stroke();
+   			var x1, y1;
+   			var x2, y2;
+        	for (var i = 0; i < lines.length; i++) {
+        		x1 = points[lines[i].from].x;
+        		y1 = points[lines[i].from].y;
+        		x2 = points[lines[i].to].x;
+        		y2 = points[lines[i].to].y;
+        		ctx.strokeStyle = "#000";
+        		ctx.beginPath();
+        		ctx.moveTo(x1, y1);
+        		ctx.lineTo(x2, y2);
+        		ctx.stroke();
+        	}
+		}
+		function find_p(){
+			var A, B, C, D, E, F, inx, iny;
+			var x1, y1, x2, y2;
+			var a1, b1, a2, b2;
+			for (var i = 0; i < lines.length-1; i++) {
+				for (var b = 0; b < lines.length; b++) {
+					x1 = points[lines[i].from].x;   y1 = points[lines[i].from].y;
+					x2 = points[lines[i].to].x;     y2 = points[lines[i].to].y;
+					a1 = points[lines[b].from].x;   b1 = points[lines[b].from].y;
+					a2 = points[lines[b].to].x;     b2 = points[lines[b].to].y;
+
+				    A = y1 - y2;
+				    B = x2 - x1;
+				    C = x1 * A + y1 * B;
+				 
+				    D = b1 - b2;
+				 	E = a2 - a1;
+				    F = a1 * D + b1 * E;
+				    if (A * E - D * B != 0){
+				        insy = (A * F - D * C) / (A * E - D * B);
+				        insx = (E * C - B * F) / (A * E - D * B);
+			            if((x1<insx&&insx<x2)||(x2<insx&&insx<x1)){
+			            	if((y1<insy&&insy<y2)||(y2<insy&&insy<y1)){
+					            if((a1<insx&&insx<a2)||(a2<insx&&insx<a1)){
+					            	if((b1<insy&&insy<b2)||(b2<insy&&insy<b1)){
+										ctx.beginPath();
+										ctx.fillStyle="#cc0000";
+						 				ctx.arc(insx, insy,5,0,2*Math.PI);
+										ctx.fill();
+									}
+								}
+							}
+						}
+						else{
+							console.log('Tes');
+						}
+				    }
+				}
+			}
+		}
+		function isEmpty(val){
+		    return (val === undefined || val == null || val.length <= 0) ? true : false;
+		}
+		function P_line(x1, y1, x2, y2, x3, y3){
+			var dx1 = x2 - x1;
+			var dy1 = y2 - y1;
+
+			var dx = x3 - x1;
+			var dy = y3 - y1;
+
+			var S = dx1 * dy - dx * dy1;
+			var ab = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+			var h = S / ab;
+			if (Math.abs(h) < d/2)
+			{
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+		function sleep(milliseconds) {
+			var start = new Date().getTime();
+			for (var i = 0; i < 1e7; i++) {
+		    	if ((new Date().getTime() - start) > milliseconds){
+					break;
+				}
+			}
+		}
+		function unique(arr) {
+		  	var obj = {};
+
+		  	for (var i = 0; i < arr.length; i++) {
+		    	var str = arr[i];
+		    	obj[str] = true; // запомнить строку в виде свойства объекта
+		  	}
+
+		  	return Object.keys(obj); // или собрать ключи перебором для IE8-
+		}
+		function point(id, x, y){
+			this.id = id;
+			this.x = x;
+			this.y = y;
+		}
+		function line(id, p_1, p_2){
+			this.id = id;
+			this.from = p_1;
+			this.to = p_2;
+		}
+		function getRandomInt(min, max)
+		{
+		  return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+	</script>
+</body>
+</html>

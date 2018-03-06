@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+	<script type="text/javascript" src="/experements/axe.js"></script>
+</head>
+<body>
+<canvas id="main">
+	dosn't work
+</canvas>
+<script type="text/javascript">
+	var canvas = document.getElementById('main');	// initialize canvas
+	var ctx = canvas.getContext('2d');
+	var x1 = 60; var y1 = 120;
+	var x2 = 120; var y2 = 60;
+	strokedouble(ctx, x1,y1,x2,y2,2,1);
+	function strokedouble(canvasctx,x1,y1,x2,y2,rend,size) {
+		canvasctx.lineWidth = size;
+		var add_x = x2; var add_y = y1;
+		var alpha = Math.atan2(y1-y2,x1-x2)*(180/3.14)-90;
+		console.log(alpha);
+		var x1_l = x1 + ((rend)) * Math.cos((alpha) * (Math.PI/180));
+	    var y1_l = y1 + ((rend)) * Math.sin((alpha) * (Math.PI/180));
+	 	var x1_r = x1 + ((-rend)) * Math.cos((alpha) * (Math.PI/180));
+	    var y1_r = y1 + ((-rend)) * Math.sin((alpha) * (Math.PI/180));
+		var x2_l = x2 + ((rend)) * Math.cos((alpha) * (Math.PI/180));
+	    var y2_l = y2 + ((rend)) * Math.sin((alpha) * (Math.PI/180));
+	 	var x2_r = x2 + ((-rend)) * Math.cos((alpha) * (Math.PI/180));
+	    var y2_r = y2 + ((-rend)) * Math.sin((alpha) * (Math.PI/180));
+	    console.log(x1_l+":"+y1_l);
+	    console.log(x2_l+":"+y2_l); 
+		canvasctx.beginPath()
+		canvasctx.moveTo(x1_l, y1_l);
+		canvasctx.lineTo(x2_l, y2_l);
+		canvasctx.moveTo(x1_r, y1_r);
+		canvasctx.lineTo(x2_r, y2_r);
+		canvasctx.stroke();
+	}
+	Math.degrees = function(rad)
+	{
+		return rad*(180/Math.PI);
+	}
+	Math.radians = function(deg)
+	{
+		return deg * (Math.PI/180);
+	}
+
+</script>
+</body>
+</html>

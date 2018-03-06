@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+</head>
+<body>
+
+<canvas id="main">
+	
+</canvas>
+<script type="text/javascript">
+	var canvas = document.getElementById('main');	// initialize canvas
+	var ctx = canvas.getContext('2d');
+	var time = 0;
+	var timerId = setInterval(function() {
+		draw_back();
+		draw_border();
+		draw_function();
+		time++;
+		if(time>=500){time = 0;}
+	}, 1000/120);
+	function draw_back() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.canvas.width  = window.innerWidth;
+		ctx.canvas.height = window.innerHeight;
+		ctx.beginPath();
+		ctx.fillStyle = "rgba(100,150,185,0.2)";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		for (var x = 90; x < 620; x += 10) {
+			ctx.moveTo(x, 0);
+			ctx.lineTo(x, window.innerHeight);
+		}	
+		for (var x = 90; x < 620; x += 10) {
+			ctx.moveTo(0, x);
+			ctx.lineTo(window.innerWidth, x);
+		}
+		ctx.lineWidth=1;
+		ctx.strokeStyle = "#ccc";
+		ctx.stroke();	
+	}
+	function draw_border(){
+		ctx.beginPath();
+		ctx.moveTo(100, 100);
+		ctx.lineTo(600, 100);
+		ctx.lineTo(600, 600);
+		ctx.lineTo(100, 600);
+		ctx.lineTo(100, 100);
+		ctx.lineWidth=3;
+		ctx.strokeStyle = "#000";
+		ctx.stroke();
+	}
+	function draw_function(){
+		for (var i = 0; i < 500; i++) {
+			if(time==i){
+				ctx.beginPath();
+				ctx.fillStyle = "black";
+				ctx.arc(100+(i), 500+f1(i), 5,0,2*Math.PI);
+				ctx.fill();
+				ctx.lineWidth=1;
+				ctx.moveTo(100+(i), 500+f1(i));
+				ctx.lineTo(100+(i), 600);
+				ctx.stroke();
+				ctx.moveTo(100+(i), 500+f1(i));
+				ctx.lineTo(100, 500+f1(i));
+				ctx.stroke();
+				ctx.font=(15)+"px arial";
+				ctx.fillText(i+":"+(f1(i)).toFixed(1) ,100+(i)+10, 500+f1(i)+10);
+			}
+			ctx.beginPath();
+			ctx.fillStyle = "black";
+			ctx.arc(100+(i), 500+f1(i), 2,0,2*Math.PI);
+			ctx.fill();	
+
+		}
+	}
+	function f1 (x){
+		var y = 100-Math.sin(Math.radians(x/5.1))*500;
+		return y;
+	}
+	function f2 (x){
+		var y = 100-x;
+		return y;
+	}
+	function f3 (x){
+		var y = 100-Math.cos(Math.radians(x/5.55))*500;
+		return y;
+	}	
+	Math.degrees = function(rad)
+	{
+		return rad*(180/Math.PI);
+	}
+	Math.radians = function(deg)
+	{
+		return deg * (Math.PI/180);
+	}
+</script>
+</body>
+</html>

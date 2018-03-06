@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+	<script type="text/javascript" src="axe.js"></script>
+</head>
+<body>
+<canvas id="main">
+	dosn't work
+</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('main');	// initialize canvas
+		var ctx = canvas.getContext('2d');
+		var points = []; var lines = [];
+		for (var i = 0; i < getRandomInt(5, 1000); i++) {
+			points[i] = new point(getRandomInt(0, window.innerWidth), getRandomInt(0, window.innerHeight), getRandomInt(0,360), getRandomInt(50, 50), getRandomInt(-2, 2));
+		}
+		for (var i = 0; i < points.length; i++) {
+			lines[i] = new line(i-1, i);
+		}
+		lines[lines.length]= new line(points.length-1, 0);
+		var target = new target();
+		ctx.canvas.width  = window.innerWidth;
+		ctx.canvas.height = window.innerHeight;
+		var ms = new Date(); var lasttime = ms.getTime(); var fps = 0;
+		var timerId = setInterval(function() {
+		    ms = new Date();
+		    fps = ms.getTime()-lasttime;
+		    lasttime = ms.getTime();
+		    update(fps);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		    draw_points();
+		    draw_lines();
+		}, 1);
+		function point(x, y, vr, vp, rp) {
+			this.x = x;
+			this.y = y;
+			this.vr = vr;
+			this.vp = vp;
+			this.rp = rp;
+		}
+		function line(a, b){
+			this.a = a;
+			this.b = b;
+		}
+		function target(){
+			this.x = 56;
+			this.y = 56;
+			this.speed = 1;
+			this.segment = 1;
+			this.position = 0;
+		}
+		function draw_points(){
+			for (var i = points.length - 1; i >= 0; i--) {
+				ctx.beginPath();
+				ctx.fillStyle="#aaa";
+				ctx.arc(points[i].x, points[i].y,5 ,0 ,2*Math.PI);
+				ctx.fill();
+			}
+			ctx.beginPath();
+			ctx.fillStyle="#e00";
+			ctx.arc(target.x, target.y,7 ,0 ,2*Math.PI);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.fillStyle="#000";
+			ctx.arc(target.x, target.y,6 ,0 ,2*Math.PI);
+			ctx.fill();
+		}
+		function draw_lines(){
+			for (var i = 1; i < lines.length; i++) {
+				ctx.beginPath();
+				ctx.moveTo(points[lines[i].a].x, points[lines[i].a].y);
+				ctx.lineTo(points[lines[i].b].x, points[lines[i].b].y);
+				ctx.stroke();
+			}
+		}
+		function update(fps){
+			var length = Math.sqrt(Math.pow(points[lines[target.segment].b].x - points[lines[target.segment].a].x, 2) + Math.pow(points[lines[target.segment].b].y - points[lines[target.segment].a].y, 2));
+
+			var dx = points[lines[target.segment].b].x - points[lines[target.segment].a].x;
+            var dy = points[lines[target.segment].b].y - points[lines[target.segment].a].y;
+            var l = Math.sqrt(dx * dx + dy * dy);
+            //находим направляющий вектор
+            var dirX = dx / l;
+            var dirY = dy / l;
+            //умножаем направляющий вектор на необх длину
+            dirX *= target.position;
+            dirY *= target.position;
+            //находим точку
+            var resX = dirX + points[lines[target.segment].a].x;
+            var resY = dirY + points[lines[target.segment].a].y;
+            target.x = resX; target.y = resY;
+            target.position=target.position+(target.speed*fps);
+            if(target.position>length){target.segment++; target.position=0;
+            	if (target.segment>=lines.length) {target.segment=1;}
+            }
+		}
+	</script>
+</body>
+</html>

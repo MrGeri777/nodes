@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>nodes</title>
+	<script src="js/alasql.js"></script>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+</head>
+<body>
+<input type="button" onclick="location.href='/index.html';" 		       value="index" style="position: fixed; width: 60px;">
+<input type="button" onclick="location.href='/experements/bezie.html';" value="exp1"  style="position: fixed; width: 60px; left: 70px; ">
+<input type="button" onclick="location.href='/experements/bezie2.html';" value="exp1"  style="position: fixed; width: 60px; left: 140px; ">
+<input type="button" onclick="location.href='/experements/fast.html';" value="exp1"  style="position: fixed; width: 60px; left: 210px; ">
+<input type="button" onclick="location.href='/experements/funcitons.html';" value="exp1"  style="position: fixed; width: 60px; left: 280px; ">
+<input type="button" onclick="location.href='/experements/point_p.html';" value="exp1"  style="position: fixed; width: 60px; left: 350px; ">
+
+<canvas id="main">
+	WORK
+</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('main');	// initialize canvas
+		var ctx = canvas.getContext('2d');
+		var size = 1.0; var fieldX = 0; var fieldY = 0;		//initialize vars for render
+		var posX = null; var posY = null; var selx = 0; var sely = 0;	// initialize vars for select
+		var nodes_type = []; var nodes = []; var points = []; var lines = []; //initialize arrays
+		var select = null; var active = null; // initialize var for id of select or active node
+		var border = 1000; // active zone
+		var select_point = null; 
+		var ms = new Date(); var fps = ms.getTime();
+		var info = 1;
+		nodes_type[0] = new node_types(0, "test", "", "", "", 100, 60); 
+		nodes_type[1] = new node_types(1, "wo1rk", ["var", "img"], ["var", "img"], "", 100, 80);
+		for (var i = 0; i <= 15; i++) {
+			nodes[i] = new node(i,(i*100), getRandomInt(0, 500), "1");
+		}
+		for (var i = 0; i<= 15; i++){
+			var from = getRandomInt(0, nodes.length-1);
+			var to = getRandomInt(0, nodes.length-1);
+			while(from==to){to = getRandomInt(0, nodes.length-1);}
+			lines[i] = new line(from, to, getRandomInt(0, (nodes_type.length-1)), getRandomInt(0, (nodes_type.length-1)));
+		}
+		var o = 0;
+		// for (var i = 0; i <= nodes.length; i++) {
+		// 	if(nodes[i]){
+		// 		if(nodes_type[nodes[i].type].input.length!=0){
+		// 			for (var b = (nodes_type[nodes[i].type].input.length-1); b >= 0; b--) {
+		// 				points[o] = new point(o, nodes_type[nodes[i].type].input[b], 0, i,b);
+		// 				o++;
+		// 			}
+		// 		}
+		// 		if(nodes_type[nodes[i].type].output.length!=0){
+		// 			for (var b = (nodes_type[nodes[i].type].output.length-1); b >= 0; b--) {
+		// 				points[o] = new point(o, nodes_type[nodes[i].type].output[b], 1, i,b);
+		// 				o++;
+		// 			}
+		// 		}				
+		// 	}
+		// }
+		document.addEventListener("keydown", keypress, false); // event keypress
+		document.addEventListener('mousemove', update, false);	// two event call function for update dates nodes and points
+		document.addEventListener('mouseenter', update, false);
+
+		// object node type
+
+		function node_types(id, name, input, output, fun, height, width){
+			this.id = id;
+ 			this.name = name;
+ 			this.input = input;
+ 			this.output = output;
+  			this.fun = fun;
+  			this.height = height;
+  			this.width = width;
+		}
+
+		//object node
+
+		function node(id, x, y, type){
+			this.id = id;
+			this.x = x;
+			this.y = y;
+			this.type = type;
+			this.active = 0;
+			this.select = 0;
+			this.zindex = nodes.length++;
+		}
+
+		//object for point(don't use now)
+
+		function point(id, type, vec, id_par, position){
+			this.id = id;
+			this.type = type;
+			this.vec = vec;
+			this.id_par = id_par;
+			this.active = 0;
+			this.position = position;
+		}
+
+		function line(from, to, num1, num2){
+			this.from = from;
+			this.to = to;
+			this.in_num = num1;
+			this.out_num = num2;
+		}
+
+		//function for resized canvas to size of page
+
+		function resize() {
+		  	ctx.canvas.width  = window.innerWidth;
+		 	ctx.canvas.height = window.innerHeight;
+		}
+
+		//get types from XML files
+
+		function get_type(){
+			var code_types =  getXMLDocument("node_types.xml");
+			var types = code_types.getElementsByTagName('points')[0];
+    		var type = types.getElementsByTagName("point");
+    		if(pointNode){
+	    		for(var i=0; i<pointNode.length; i++){
+	       			var point = pointNode[i];
+	       			var id = code_types.getElementsByTagName("id")[i].childNodes[0].nodeValue;
+	       			var x = code_types.getElementsByTagName("x")[i].childNodes[0].nodeValue;
+	       			var y = code_types.getElementsByTagName("y")[i].childNodes[0].nodeValue;
+	        		nodes_type[i] = {id:id, x:x, y:y};
+	        	}
+			}
+		}
+		//get nodes from XML file
+
+		function nodes_from_files() {
+			
+		}
+
+		// function of update nodes
+
+		function update (e) {
+		   	if(active){
+				posX = (e.pageX-selx)/size-fieldX;
+	    		posY = (e.pageY-sely)/size-fieldY;
+	    		nodes[active].x = posX;
+	    		nodes[active].y = posY;
+		    }
+		    if(fieldX<-border){fieldX=-border;}
+		    if(fieldX>border){fieldX=border;}		
+		   	if(fieldY<-border){fieldY=-border;}
+		    if(fieldY>border){fieldY=border;}	    
+		}
+		canvas.addEventListener('click', function(){ 
+			var e = window.event;
+			var posX = e.clientX/size-fieldX;
+    		var posY = e.clientY/size-fieldY;
+    		var i = 0;
+    		var ids = [];
+    		var fromX = 0;
+    		var toX = 0;
+    		var fromY = 0;
+    		var toY = 0;
+    		var toid = 0;
+    		var b = 0;
+    		while(i<nodes.length){
+    			fromX = nodes[i].x;
+    			fromY = nodes[i].y;
+    			toid = nodes[i].type;
+    			toX = nodes[i].x+nodes_type[toid].width;
+     			toY = nodes[i].y+nodes_type[toid].height; 
+     			if(fromX<=posX){
+     				if(posX<=toX){
+	     				if(fromY<=posY){
+		     				if(posY<=toY){
+			     				ids[b] = i;
+			     				b++;
+			     			}
+						}
+	     			}
+     			}
+     			i++;
+    		}
+    		var sort = [];
+    		b = 0;
+    		if(ids.length!=0){
+	    		while(b<ids.length){
+	    			sort[b] = {id:ids[b], zindex:nodes[ids[b]].zindex};
+	    			b++;
+	    		}
+	    		sort.sort();
+	    		i = 0;
+	    		if(nodes[sort[sort.length - 1].id].select==0 && active==null && active == null){
+		    		while(i<nodes.length){
+		    			nodes[i].select = 0;
+		    			select = null;
+		    			i++;
+		    		}
+		    		nodes[sort[sort.length - 1].id].select = 1;
+		    		select = sort[sort.length - 1].id;
+		    		nodes = array_toend(nodes, sort[sort.length - 1].id);
+	    		}
+	    		else{
+	    			if(nodes[sort[sort.length - 1].id].active==0 && active==null){
+		    			nodes[sort[sort.length - 1].id].active = 1;
+		    			active = sort[sort.length - 1].id;
+		    			selx = posX-nodes[sort[sort.length - 1].id].x;
+		    			sely = posY-nodes[sort[sort.length - 1].id].y;
+	    			}
+	    			else{
+	    				nodes[sort[sort.length - 1].id].active = 0;
+	    				active = null;
+	    				selx = 0;
+	    				sely = 0;
+	    			}
+	    		}
+    		}
+    		else{
+    			i = 0;
+    			while(i<nodes.length){
+		    		nodes[i].select = 0;
+		    		select = null;
+		    		i++;
+		    	}
+		    	i = 0;
+		    	while(i<nodes.length){
+		    		nodes[i].active = 0;
+		    		active = null;
+		    		i++;
+		    	}
+    		}
+		});
+
+		// event for click of mouse
+
+		onmousedown = function(e) {
+			if (e.button == 2) {
+				var xstart = e.pageX;
+				var ystart = e.pageY;
+				function moveAt(e) {
+					fieldX = ((xstart-e.pageX)/size*0.1)+fieldX;
+					fieldY = ((ystart-e.pageY)/size*0.1)+fieldY;
+				}
+				document.onmousemove = function(e) {
+					moveAt(e);
+				}
+				document.onmouseup = function() {
+					document.onmouseup = null;
+					document.onmousemove = null;
+				}
+			}
+		}
+
+		// event of keypressS
+
+		function keypress(e){
+			if(e.keyCode==27){
+				var i = 0;
+				while(i<nodes.length){
+					nodes[i].active = 0;
+					nodes[i].select = 0;
+					active = null;
+					select = null;
+					i++;
+				}
+			}
+			if(e.keyCode==71){
+				select = nodes.length-1;
+				if(select!=null){
+					nodes[select].active = 1;
+					nodes[select].select = 1;
+					active = select;
+					select = select;
+					sely = nodes_type[nodes[select].type].height/2;
+					selx = nodes_type[nodes[select].type].width/2;
+				}
+			}
+			if(e.keyCode==88){
+				if(select!=null){
+					nodes.splice(nodes.length--, 1);					
+					select = null;
+					active = null;
+					nodes.sort();
+				}
+			}		
+			if(e.keyCode==37 && fieldX){
+				fieldX=fieldX-size*3;
+			}
+			if(e.keyCode==39){
+				fieldX=fieldX+size*3;
+			}
+			if(e.keyCode==38){
+				fieldY=fieldY-size*3;
+			}
+			if(e.keyCode==40){
+				fieldY=fieldY+size*3;
+			}
+			if(e.keyCode==116){
+				window.location.reload();
+			}
+			if(e.keyCode==82){
+				if(size>=0.5){
+					size=size-0.1;
+				}
+			}
+			if(e.keyCode==114){
+				if(info==0){info=1;}
+				else{info=0;}
+			}
+			if(e.keyCode==70){
+				if(size<=1.5){
+					size=size+0.1;
+				}
+			}		
+		}
+
+		//function for draw background(grid)
+
+		function draw_back() {
+			ctx.beginPath();
+			for (var x = (fieldX%10)*size; x < window.innerWidth; x += size*10) {
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, window.innerHeight);
+			}	
+			for (var x = (fieldY%10)*size; x < window.innerHeight; x += size*10) {
+				ctx.moveTo(0, x);
+				ctx.lineTo(window.innerWidth, x);
+			}
+			ctx.lineWidth=2*size;
+			ctx.strokeStyle = "#eee";
+			ctx.stroke();	
+		}
+
+		//draw all nodes->call into while draw every node
+
+		function draw_nodes(){
+			var i = 0;
+			while(i<nodes.length){
+				node_draw(i);
+				i++;
+			}
+		}
+
+		// draw one node
+
+		function node_draw(id){
+			var x = (nodes[id].x+fieldX)*size;
+			var y = (nodes[id].y+fieldY)*size;
+			var borx = null; var bory = null;
+			if(size>=1){borx=window.innerWidth*size; bory=window.innerHeight*size;}
+			else       {borx=window.innerWidth/size; bory=window.innerHeight/size;}
+			if(borx>x && x>0-nodes_type[nodes[id].type].width && bory>y && y>0-nodes_type[nodes[id].type].height){
+				var type = nodes[id].type;
+				var active = nodes[id].active;
+				var idle = nodes[id].id;
+				var select = nodes[id].select;
+				if(select==1){
+					if(active==1){
+						ctx.lineWidth = 2*size;
+						ctx.strokeStyle = "orange";
+					}
+					else{
+						ctx.lineWidth = 2*size;
+						ctx.strokeStyle = "#444";
+					}
+				}
+				else{
+					ctx.lineWidth = 1*size;
+					ctx.strokeStyle = "#888";
+				}
+				var height = nodes_type[type].height*size;
+				var width = nodes_type[type].width*size;
+				var input_lenght = nodes_type[type].input.length;
+				var output_lenght = nodes_type[type].output.length;
+				var radius = 15*size;
+				var grd=ctx.createLinearGradient(x,y,x,y+(20*size));
+				grd.addColorStop(0,"rgba(100,100,100,0.9)");
+				grd.addColorStop(0.99,"rgba(100,100,100,0.9)");
+				grd.addColorStop(1,"rgba(100,150,185,0.9)");
+				ctx.fillStyle=grd;
+				ctx.beginPath();
+				ctx.moveTo(x,y+radius);
+				ctx.lineTo(x,y+height-radius);
+				ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+				ctx.lineTo(x+width-radius,y+height);
+				ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+				ctx.lineTo(x+width,y+radius);
+				ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+				ctx.lineTo(x+radius,y);
+				ctx.quadraticCurveTo(x,y,x,y+radius);
+				ctx.fill();
+				ctx.stroke();
+				var b = 0;
+				for (var i = 1; i <= input_lenght*20; i+=20) {
+					ctx.beginPath();
+					ctx.arc(x,y+(i+35)*size,6*size,0,2*Math.PI);
+					ctx.fillStyle="orange";
+					if(nodes_type[type].input[b]=="var"){
+						ctx.fillStyle="lime";
+					}
+					else if(nodes_type[type].input[b]=="img"){
+						ctx.fillStyle="orange";
+					}
+					else if(nodes_type[type].input[b]=="vector"){
+						ctx.fillStyle="blue";
+					}
+					else{
+						ctx.fillStyle="#888";
+					}
+					b++;
+					ctx.fill();
+					ctx.stroke();
+				}
+				var b = 0;
+				for (var i = 1; i <= input_lenght*20; i+=20) {
+					ctx.beginPath();
+					ctx.arc(x+(nodes_type[type].width*size),y+(i+35)*size,6*size,0,2*Math.PI);
+					if(nodes_type[type].input[b]=="var"){
+						ctx.fillStyle="lime";
+					}
+					else if(nodes_type[type].input[b]=="img"){
+						ctx.fillStyle="orange";
+					}
+					else if(nodes_type[type].input[b]=="vector"){
+						ctx.fillStyle="blue";
+					}
+					else{
+						ctx.fillStyle="#888";
+					}
+					b++;
+					ctx.fill();
+					ctx.stroke();
+				}
+				ctx.fillStyle="black";
+				ctx.font=(12*size)+"px arial";
+				ctx.fillText(nodes_type[type].name,x+(15*size),y+(15*size));
+			}
+		}
+
+		// draw line
+
+		function draw_lines(){
+			var sotrs = alasql('SELECT * FROM ? ORDER BY id DESC, prop ASC',[nodes]);
+			for (var i = lines.length - 1; i >= 0; i--) {
+				var id1 = alasql('SELECT * FROM ? where id = '+lines[i].from,[nodes])[0];
+				var id2 = alasql('SELECT * FROM ? where id = '+lines[i].to,[nodes])[0];
+				if(id1!=null && id2!=null){
+					var x1 = (id1.x+nodes_type[id1.type].width+fieldX)*size;
+					var x2 = (id2.x+fieldX)*size;
+					var y1 = (id1.y+(lines[i].out_num*20)+35+fieldY)*size;
+					var y2 = (id2.y+(lines[i].in_num*20)+35+fieldY)*size;
+					draw_line(x1,y1,x2,y2);
+				}
+				else{
+					lines.splice(i, 1);
+				}
+			}
+		}
+		function draw_line(x1,y1,x2,y2){
+			var x_c = (x1+x2)/2;
+			var y_c = (y1+y2)/2;
+			var length = Math.sqrt(Math.pow(x1-x_c,2)+Math.pow(y1-y_c,2));
+			ctx.strokeStyle = "#000";
+			ctx.lineWidth = 1*size;
+			ctx.beginPath();
+			ctx.moveTo(x1,y1);
+			ctx.bezierCurveTo(x1+(length/2), y1, x2-(length/2), y2, x2, y2); 
+			// ctx.moveTo(x2,y2);
+			// ctx.bezierCurveTo(x2, y2, x2-length, y2, x_c, y_c); 
+			ctx.stroke();
+			// ctx.beginPath();
+			// ctx.arc(x_c, y_c,2,0,2*Math.PI);
+			// ctx.stroke();	
+		}		
+		// 
+		// Method for draw points #2
+		// don't use now
+		// 19.10.2017
+		// 
+		// function points_draw(){
+		// 	var id_par = null;
+		// 	var x = 0; var y = 0; var active = 0; var vec = 0; var type = 0;
+		// 	var b = 0; var backid = null;
+		// 	ctx.strokeStyle = "#444";
+		// 	ctx.lineWidth = 1*size;
+		// 	for (var i = 0 ; i <= points.length; i++) {
+		// 		if(points[i]){
+		// 			id_par = points[i].id_par;
+		// 			if(nodes[id_par]){
+		// 				vec = points[i].vec;
+		// 				active = points[i].active;
+		// 				type = points[i].type;
+		// 				x = (nodes[id_par].x+fieldX)*size;
+		// 				y = nodes[id_par].y+fieldY;
+		// 				b = points[i].position;
+		// 				width = nodes_type[nodes[id_par].type].width;
+		// 				height = nodes_type[nodes[id_par].type].height;
+		// 				if(type=="var"){
+		// 					ctx.fillStyle="lime";
+		// 				}
+		// 				else if(type=="img"){
+		// 					ctx.fillStyle="orange";
+		// 				}
+		// 				else if(type=="vector"){
+		// 					ctx.fillStyle="blue";
+		// 				}
+		// 				else{
+		// 					ctx.fillStyle="#888";
+		// 				}
+		// 				if(vec==1){
+		// 					x = (x+width*size);
+		// 				}
+		// 				y = ((15+y)+(20+b*15))*size;
+
+		// 				backid = id_par;
+		// 				ctx.beginPath();
+		// 				ctx.arc(x, y,6*size,0,2*Math.PI);
+		// 				ctx.fill();
+		// 				ctx.stroke();	
+		// 			}
+		// 		}
+		// 	}		
+		// }
+
+
+		//redraw page in 30fps
+
+		(function() {
+		    setTimeout(arguments.callee, 1000/120);
+		    redraw();
+		})();
+
+		//redraw
+
+		function redraw(){
+			resize();
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			draw_back();
+			draw_lines();
+			draw_nodes();
+			ms.getTime()
+			// call function 19.10.2017
+			// points_draw();
+			ctx.fillStyle="black";
+			ctx.font=(15)+"px arial";
+			ms = new Date();
+			if(info==1){
+				ctx.fillText('fps:'+(1000/(ms.getTime()-fps)).toFixed(0),0 ,window.innerHeight-5);
+				ctx.fillText('camera: x:'+fieldX.toFixed(0)+' y:'+fieldY.toFixed(0),0 ,window.innerHeight-20);
+				ctx.fillText('size: '+size.toFixed(1	),0 ,window.innerHeight-35);
+				if(select!=null){
+					if(active!=null){
+						ctx.fillText('active: '+nodes[active].id,0 ,window.innerHeight-50);
+						ctx.fillText('x:'+nodes[active].x.toFixed(0)+' y:'+nodes[active].y.toFixed(0),0 ,window.innerHeight-65);
+					}
+					else{
+						ctx.fillText('select: '+nodes[select].id,0 ,window.innerHeight-50);
+						ctx.fillText('x:'+nodes[select].x.toFixed(0)+' y:'+nodes[select].y.toFixed(0),0 ,window.innerHeight-65);
+					}
+				}
+				else{
+					ctx.fillText('select',0 ,window.innerHeight-50);
+					ctx.fillText('x:  y:',0 ,window.innerHeight-65);
+				}
+				ctx.fillText(':INFO:',0 ,window.innerHeight-80);
+			}
+			fps = ms.getTime();
+		}
+
+		// helped function
+
+		function getXMLDocument(url)  
+		{  
+		    var xml;  
+		    if(window.XMLHttpRequest)  
+		    {  
+		        xml=new window.XMLHttpRequest();  
+		        xml.open("GET", url, false);  
+		        xml.send("");  
+		        return xml.responseXML;  
+		    }  
+		    else  
+		        if(window.ActiveXObject)  
+		        {  
+		            xml=new ActiveXObject("Microsoft.XMLDOM");  
+		            xml.async=false;  
+		            xml.load(url);  
+		            return xml;  
+		        }  
+		        else  
+		        {  
+		            alert("Загрузка XML не поддерживается браузером");  
+		            return null;  
+		        }  
+		}
+		function array_toend(array, element){
+			var element_ge = array[element];
+			array.splice(element, 1);	
+			array.push(element_ge);
+			return(array);
+		}
+		function getRandomInt(min, max)
+		{
+		  return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+	</script>
+</body>
+</html>

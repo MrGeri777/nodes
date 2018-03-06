@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+</head>
+<body>
+<input type="button" onclick="location.href='/index.html';" 		       value="index" style="position: fixed; width: 60px;">
+<input type="button" onclick="location.href='/experements/bezie.html';" value="exp1"  style="position: fixed; width: 60px; left: 70px; ">
+<input type="button" onclick="location.href='/experements/fast.html';" value="exp1"  style="position: fixed; width: 60px; left: 140px; ">
+
+<canvas id="main">
+	
+</canvas>
+	<script type="text/javascript">
+		var canvas = document.getElementById('main');	// initialize canvas
+		var ctx = canvas.getContext('2d');
+		draw_back();
+		var points = []; lines = [];
+		for (var i = 0; i <= 40; i++) {
+			points[i] = new point(i,i*50, getRandomInt(0, window.innerHeight));
+		}
+		console.log(points.length);
+		for (var i = 0; i < points.length-1; i++) {
+			var b = i+1;
+			lines[i] = new line(i, i, b);
+		}
+		function point(id, x, y){
+			this.id = id;
+			this.x = x;
+			this.y = y;
+			this.active = 0;
+		}
+		function line(id, from, to){
+			this.id = id;
+			this.from = from;
+			this.to = to;
+		}
+		function draw_back() {
+			ctx.canvas.width  = window.innerWidth;
+		 	ctx.canvas.height = window.innerHeight;
+			ctx.beginPath();
+			for (var x = 0.5; x < window.innerWidth; x += 10) {
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, window.innerHeight);
+			}	
+			for (var x = 0.5; x < window.innerHeight; x += 10) {
+				ctx.moveTo(0, x);
+				ctx.lineTo(window.innerWidth, x);
+			}
+			ctx.lineWidth=2;
+			ctx.strokeStyle = "#eee";
+			ctx.stroke();	
+		}
+		draw_points();
+		draw_lines();
+		function draw_points(){
+			for (var i = points.length - 1; i >= 0; i--) {
+				draw_point(i);
+			}
+		}
+		function draw_lines(){
+			console.log(lines.length);
+			for (var i = 0; i < lines.length; i++) {
+				var x1 = points[lines[i].from].x;
+				var y1 = points[lines[i].from].y;
+				var x2 = points[lines[i].to].x;
+				var y2 = points[lines[i].to].y;
+				draw_line(x1,y1,x2,y2);
+			}
+		}
+		function draw_point(id){
+			ctx.beginPath();
+			ctx.arc(points[id].x, points[id].y,10,0,2*Math.PI);
+			ctx.fillStyle="orange";
+			ctx.strokeStyle = "#444";
+			ctx.lineWidth = 2;
+			ctx.fill();
+			ctx.stroke();
+		}
+		function update(){
+			var e = window.event;
+			var posX = e.clientX;
+    		var posY = e.clientY;
+			for (var i = points.length - 1; i >= 0; i--) {
+				points[i]
+			}
+		}
+		function draw_line(x1,y1,x2,y2){
+			var x_c = (x1+x2)/2;
+			var y_c = (y1+y2)/2;
+			var length = Math.sqrt(Math.pow(x1-x_c,2)+Math.pow(y1-y_c,2));
+			console.log(length);
+			ctx.beginPath();
+			ctx.moveTo(x1,y1);
+			ctx.bezierCurveTo(x1+(length), y1, x2-(length), y2, x2, y2); 
+			// ctx.moveTo(x2,y2);
+			// ctx.bezierCurveTo(x2, y2, x2-length, y2, x_c, y_c); 
+			ctx.stroke();
+			// ctx.beginPath();
+			// ctx.arc(x_c, y_c,2,0,2*Math.PI);
+			// ctx.stroke();	
+		}
+		function getRandomInt(min, max)
+		{
+		  return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+	</script>
+</body>
+</html>

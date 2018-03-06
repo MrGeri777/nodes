@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		* { margin: 0; padding: 0;}
+		body, html { height:100%; width: 100%; overflow: hidden;}
+		canvas {
+		  -webkit-touch-callout: none; /* iOS Safari */
+		    -webkit-user-select: none; /* Safari */
+		     -khtml-user-select: none; /* Konqueror HTML */
+		       -moz-user-select: none; /* Firefox */
+		        -ms-user-select: none; /* Internet Explorer/Edge */
+		            user-select: none; /* Non-prefixed version, currently
+		                                  supported by Chrome and Opera */
+		}
+	</style>
+</head>
+<body>
+<canvas id="main">
+	dosn't work
+</canvas>
+<script type="text/javascript">
+	var canvas = document.getElementById('main');	// initialize canvas
+	var ctx = canvas.getContext('2d');
+	ctx.canvas.width  = window.innerWidth;
+	ctx.canvas.height = window.innerHeight;
+	var points = []; var lines = [];
+	var test = get_grapgh("graph_1.s");
+	var ms = new Date(); var lasttime = ms.getTime(); var fps = 0;
+	var got = [0,1,5,6,10,11,15];
+	var timerId = setInterval(function() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		render();
+		ms = new Date();
+		fps = 1000/(ms.getTime()-lasttime);
+		lasttime = ms.getTime();
+		ctx.strokeText(fps, 15, 15);
+	}, 1000/30);
+	function get_grapgh(file) {
+		var rawFile = new XMLHttpRequest();
+		rawFile.open("GET", file, true);
+		rawFile.onreadystatechange = function() {
+			if (rawFile.readyState === 4) {
+				var allText = rawFile.responseText;
+				decode(allText);
+			}
+		}
+		rawFile.send();
+	}
+	function decode(text){
+		var arr = text.split(';');
+		var work = false;
+		for (var i = 0; i < arr.length; i++) {
+			arr[i] = arr[i].replace(" ", "");
+			arr[i] = arr[i].replace(/\r|\n/g, "");
+			if(arr[i]=="begin"){
+				work = true;
+			}
+			else if(arr[i]=="end"){
+				work = false;
+			}
+			else if(work==true	){
+				var lang = arr[i].length;
+				lang = Math.sqrt(lang);
+				if(lang == parseInt(lang, 10)){
+					if (lang!=points.length) {
+						console.error("error matrix");
+					}
+					else{
+						var spmatrix = arr[i].split("");
+						var where = 0;
+						var wheh = 0;
+						for (var b = 0; b < points.length; b++) {
+							for (var a = 0; a < points.length; a++) {
+								where  = (lang * (b)) + a;
+								if(spmatrix[wheh]==1){
+									lines[lines.length] = new line(b, a);
+								}
+								wheh++;
+							}
+						}
+					}
+				}
+			}
+			else{
+				arr[i] = arr[i].replace(",", "=");
+				var poin =  arr[i].split('=');
+				if(work==false&&poin[0]&&poin[1]&&poin[2]){
+					points[points.length] = new point(poin[1], poin[2], poin[0]);
+				}
+			}
+		}
+	}
+	function point(x, y, name) {
+		this.x = parseFloat(x);
+		this.y = parseFloat(y);
+		this.name = name;
+	}
+	function line(a, b){
+		this.a = parseInt(a);
+		this.b = parseInt(b);
+	}
+	function degm(id){
+		var ret = [];
+		for (var i = 0; i < lines.length; i++) {
+			if(lines[i].b == id){
+				ret[ret.length] = i;
+			}
+		}
+		return ret;
+	}
+	function degp(id){
+		var ret = [];
+		for (var i = 0; i < lines.length; i++) {
+			if(lines[i].a == id){
+				ret[ret.length] = i;
+			}
+		}
+		return ret;
+	}
+	function keypress(e){
+		if(e.keyCode==116){
+			window.location.reload();
+		}
+	}
+	function draw_points(){
+		for (var i = points.length - 1; i >= 0; i--) {
+			ctx.beginPath();
+			ctx.fillStyle="#aaa";
+			ctx.arc(points[i].x, points[i].y, 5 ,0 ,2*Math.PI);
+			ctx.fill();
+			ctx.strokeText(points[i].name, points[i].x+5, points[i].y+10);
+		}
+	}
+	function draw_lines(){
+		ctx.beginPath();
+		for (var i = 0; i < lines.length; i++) {
+			strokedouble(points[lines[i].a].x, points[lines[i].a].y, points[lines[i].b].x, points[lines[i].b].y, 2, 1);
+			// ctx.moveTo(points[lines[i].a].x, points[lines[i].a].y);
+			// ctx.lineTo(points[lines[i].b].x, points[lines[i].b].y);
+		}
+		ctx.stroke();
+	}
+	function strokedouble(x1,y1,x2,y2,rend,size) {
+		ctx.lineWidth = size;
+		var add_x = x2; var add_y = y1;
+		var alpha = Math.atan2(y1-y2,x1-x2)*(180/3.14)-90;
+		var x1_l = x1 + ((rend)) * Math.cos((alpha) * (Math.PI/180));
+	    var y1_l = y1 + ((rend)) * Math.sin((alpha) * (Math.PI/180));
+		var x2_l = x2 + ((rend)) * Math.cos((alpha) * (Math.PI/180));
+	    var y2_l = y2 + ((rend)) * Math.sin((alpha) * (Math.PI/180));
+		ctx.moveTo(x1_l, y1_l);
+		ctx.lineTo(x2_l, y2_l);
+	}
+	function draw_Way(){
+		ctx.strokeStyle = "orange";
+		ctx.lineWidth = 5;
+		ctx.beginPath();
+		ctx.moveTo(points[got[0]].x, points[got[0]].y);
+		for (var i = 1; i < got.length; i++) {
+			ctx.lineTo(points[got[i]].x, points[got[i]].y);
+		}
+		ctx.stroke();
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 1;
+	}
+	function render(){
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		draw_lines();
+		draw_Way();
+		draw_points();
+	}
+	</script>
+</body>
+</html>
